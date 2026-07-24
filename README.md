@@ -134,14 +134,19 @@ address to share.
 
 ## Update an Existing Deployment
 
-After making changes:
+After making changes, run these two commands, in this order, every time:
 
 ```bash
-npm run build
-firebase deploy
+npm run build                    # rebuild dist/ from your latest source
+firebase deploy --only hosting   # upload dist/ and make it live
 ```
 
 The new version is live within seconds. There is no separate publish step.
+
+> **Always build first.** Firebase only uploads what is in `dist/`. Skipping
+> `npm run build` redeploys the previous build. You do **not** need to repeat
+> `firebase login` (you stay logged in) or `firebase init` (it would overwrite
+> your config) — `.firebaserc` and `firebase.json` are already set.
 
 To deploy from a machine that has never deployed before, run `firebase login`
 first, and create `.firebaserc` from the example:
