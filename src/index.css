@@ -12,4 +12,24 @@
     @apply bg-slate-100 text-slate-800;
     font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   }
+
+  /*
+   * Written as a plain rule rather than `@apply ... dark:bg-slate-950`: an
+   * @apply of a variant utility inside @layer base is dropped by Tailwind 3,
+   * so the page background would stay light in dark mode.
+   */
+  .dark body {
+    @apply bg-slate-950 text-slate-200;
+  }
+
+  /* Native spinners are visual noise in a dense estimate grid. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
