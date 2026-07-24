@@ -169,6 +169,37 @@ export function calculateProjectRoleTotals(
   return totals
 }
 
+/** A role's burn rate, defaulting to 1 and never zero/negative. */
+export function roleBurnRate(role: Role): number {
+  const rate = role.burnRate
+  if (rate === undefined || !Number.isFinite(rate) || rate <= 0) return 1
+  return rate
+}
+
+/**
+ * Elapsed working days a role needs for a given man-day total, given its burn
+ * rate (people working in parallel). Man-days ÷ burn rate.
+ */
+export function calculateRoleDays(mandays: number, role: Role): number {
+  return roundToPrecision(mandays / roleBurnRate(role))
+}
+
+/**
+ * The project's timeline in working days: the longest single-role track, since
+ * roles work in parallel. Only enabled work counts, matching every other total.
+ */
+export function calculateProjectTimelineDays(project: ProjectData): number {
+  let max = 0
+  for (const role of project.roles) {
+    const days = calculateRoleDays(
+      calculateProjectRoleTotal(project, role.id),
+      role,
+    )
+    if (days > max) max = days
+  }
+  return roundToPrecision(max)
+}
+
 /** Count of tasks under a feature — used by delete confirmation messages. */
 export function countTasksInFeature(feature: MainFeature): number {
   return feature.tasks.length

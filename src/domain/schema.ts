@@ -37,6 +37,11 @@ const nonEmptyName = z
 export const roleSchema = z.object({
   id: z.string().min(1),
   name: nonEmptyName,
+  burnRate: z
+    .number()
+    .finite('Burn rate must be a finite number.')
+    .positive('Burn rate must be greater than zero.')
+    .optional(),
 })
 
 export const taskSchema = z.object({
@@ -51,6 +56,7 @@ export const mainFeatureSchema = z.object({
   name: z.string().default(''),
   enabled: z.boolean().default(true),
   collapsed: z.boolean().default(false),
+  note: z.string().optional(),
   tasks: z.array(taskSchema).default([]),
 })
 

@@ -267,6 +267,9 @@ export function EstimatorPage() {
           onRenameFeature={(featureId, name) =>
             dispatch({ type: 'feature/rename', featureId, name })
           }
+          onSetFeatureNote={(featureId, note) =>
+            dispatch({ type: 'feature/setNote', featureId, note })
+          }
           onToggleFeature={(featureId, enabled) =>
             dispatch({ type: 'feature/setEnabled', featureId, enabled })
           }
@@ -377,7 +380,12 @@ export function EstimatorPage() {
           Add Phase
         </button>
 
-        <ProjectSummary project={project} />
+        <ProjectSummary
+          project={project}
+          onSetBurnRate={(roleId, burnRate) =>
+            dispatch({ type: 'role/setBurnRate', roleId, burnRate })
+          }
+        />
       </main>
 
       <ImportDialog

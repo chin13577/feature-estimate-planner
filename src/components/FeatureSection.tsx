@@ -26,6 +26,7 @@ export interface FeatureSectionProps {
   featureCount: number
   onRename: (name: string) => void
   onToggle: (enabled: boolean) => void
+  onSetNote: (note: string) => void
   onToggleCollapsed: () => void
   onDuplicate: () => void
   onRemove: () => void
@@ -47,6 +48,7 @@ export function FeatureSection({
   featureCount,
   onRename,
   onToggle,
+  onSetNote,
   onToggleCollapsed,
   onDuplicate,
   onRemove,
@@ -143,19 +145,45 @@ export function FeatureSection({
         </div>
       </header>
 
+      {/* When collapsed, still surface the description so it reads at a glance. */}
+      {feature.collapsed && (feature.note ?? '').trim().length > 0 && (
+        <p className="whitespace-pre-wrap px-3 py-2 text-sm italic text-slate-500 dark:text-slate-400">
+          {feature.note}
+        </p>
+      )}
+
       {!feature.collapsed && (
-        <TaskTable
-          phase={phase}
-          feature={feature}
-          roles={roles}
-          onRenameTask={onRenameTask}
-          onToggleTask={onToggleTask}
-          onSetEstimate={onSetEstimate}
-          onDuplicateTask={onDuplicateTask}
-          onRemoveTask={onRemoveTask}
-          onMoveTask={onMoveTask}
-          onAddTask={onAddTask}
-        />
+        <>
+          <TaskTable
+            phase={phase}
+            feature={feature}
+            roles={roles}
+            onRenameTask={onRenameTask}
+            onToggleTask={onToggleTask}
+            onSetEstimate={onSetEstimate}
+            onDuplicateTask={onDuplicateTask}
+            onRemoveTask={onRemoveTask}
+            onMoveTask={onMoveTask}
+            onAddTask={onAddTask}
+          />
+
+          <div className="border-t border-slate-200 px-3 py-2 dark:border-slate-800">
+            <label
+              htmlFor={`feature-note-${feature.id}`}
+              className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500"
+            >
+              Note
+            </label>
+            <textarea
+              id={`feature-note-${feature.id}`}
+              rows={2}
+              value={feature.note ?? ''}
+              placeholder="Description, assumptions, links…"
+              onChange={(event) => onSetNote(event.target.value)}
+              className="w-full resize-y rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:focus:ring-sky-900 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500"
+            />
+          </div>
+        </>
       )}
     </section>
   )

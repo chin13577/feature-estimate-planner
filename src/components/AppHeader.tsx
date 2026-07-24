@@ -57,12 +57,12 @@ export function AppHeader({
             </button>
 
             <button type="button" onClick={onOpenImport} className={BUTTON}>
-              <UploadIcon className="h-4 w-4" />
+              <DownloadIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Import JSON</span>
             </button>
 
             <button type="button" onClick={onExport} className={BUTTON}>
-              <DownloadIcon className="h-4 w-4" />
+              <UploadIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Export JSON</span>
             </button>
 

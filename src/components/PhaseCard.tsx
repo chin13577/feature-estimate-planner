@@ -36,6 +36,7 @@ export interface PhaseCardProps {
   onSetNote: (note: string) => void
   onAddFeature: () => void
   onRenameFeature: (featureId: string, name: string) => void
+  onSetFeatureNote: (featureId: string, note: string) => void
   onToggleFeature: (featureId: string, enabled: boolean) => void
   onToggleFeatureCollapsed: (featureId: string, collapsed: boolean) => void
   onDuplicateFeature: (featureId: string) => void
@@ -153,6 +154,7 @@ export function PhaseCard(props: PhaseCardProps) {
               featureCount={phase.features.length}
               onRename={(name) => props.onRenameFeature(feature.id, name)}
               onToggle={(enabled) => props.onToggleFeature(feature.id, enabled)}
+              onSetNote={(note) => props.onSetFeatureNote(feature.id, note)}
               onToggleCollapsed={() =>
                 props.onToggleFeatureCollapsed(feature.id, !feature.collapsed)
               }

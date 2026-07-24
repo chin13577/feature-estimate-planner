@@ -135,6 +135,7 @@ export function duplicateFeature(
     name: renameCopy ? duplicateName(feature.name) : feature.name,
     enabled: feature.enabled,
     collapsed: feature.collapsed,
+    note: feature.note,
     tasks: feature.tasks.map((task) => duplicateTask(task, false)),
   }
 }
@@ -162,6 +163,7 @@ export function duplicateProject(
   const roleIdMap = new Map<string, string>()
   const roles = project.roles.map((role) => {
     const newRole = createRole(role.name)
+    newRole.burnRate = role.burnRate
     roleIdMap.set(role.id, newRole.id)
     return newRole
   })
@@ -198,6 +200,7 @@ export function duplicateProject(
         name: feature.name,
         enabled: feature.enabled,
         collapsed: feature.collapsed,
+        note: feature.note,
         tasks: feature.tasks.map((task) => ({
           id: createId(),
           name: task.name,

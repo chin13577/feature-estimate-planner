@@ -34,6 +34,7 @@ export type ProjectAction =
   // Roles
   | { type: 'role/add'; name: string }
   | { type: 'role/rename'; roleId: string; name: string }
+  | { type: 'role/setBurnRate'; roleId: string; burnRate: number }
   | { type: 'role/move'; roleId: string; direction: 'up' | 'down' }
   | { type: 'role/reorder'; fromIndex: number; toIndex: number }
   | { type: 'role/remove'; roleId: string }
@@ -51,6 +52,7 @@ export type ProjectAction =
   | { type: 'feature/add'; phaseId: string; name?: string }
   | { type: 'feature/rename'; featureId: string; name: string }
   | { type: 'feature/setEnabled'; featureId: string; enabled: boolean }
+  | { type: 'feature/setNote'; featureId: string; note: string }
   | { type: 'feature/setCollapsed'; featureId: string; collapsed: boolean }
   | { type: 'feature/duplicate'; featureId: string }
   | { type: 'feature/remove'; featureId: string }
@@ -272,6 +274,25 @@ function applyAction(
       }
     }
 
+    case 'role/setBurnRate': {
+      const target = state.roles.find((role) => role.id === action.roleId)
+      if (target === undefined) return state
+
+      // A burn rate is people-in-parallel; zero or negative is meaningless and
+      // would divide totals to infinity, so those are ignored.
+      if (!Number.isFinite(action.burnRate) || action.burnRate <= 0) return state
+      if (target.burnRate === action.burnRate) return state
+
+      return {
+        ...state,
+        roles: state.roles.map((role) =>
+          role.id === action.roleId
+            ? { ...role, burnRate: action.burnRate }
+            : role,
+        ),
+      }
+    }
+
     case 'role/move': {
       const roles = moveById(state.roles, action.roleId, action.direction)
       if (roles === state.roles) return state
@@ -450,6 +471,20 @@ function applyAction(
         phases: mapFeature(state, action.featureId, (feature) => ({
           ...feature,
           enabled: action.enabled,
+        })),
+      }
+    }
+
+    case 'feature/setNote': {
+      const target = findFeature(state, action.featureId)
+      if (target === undefined || (target.note ?? '') === action.note) {
+        return state
+      }
+      return {
+        ...state,
+        phases: mapFeature(state, action.featureId, (feature) => ({
+          ...feature,
+          note: action.note,
         })),
       }
     }

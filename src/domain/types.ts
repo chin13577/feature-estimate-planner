@@ -20,6 +20,12 @@ export type EstimateValue = number | null
 export interface Role {
   id: string
   name: string
+  /**
+   * Man-days this role can complete per working day — i.e. how many people
+   * work in parallel on it. Dividing a role's total man-days by its burn rate
+   * gives the elapsed working days that role needs. Absent means 1.
+   */
+  burnRate?: number
 }
 
 export interface Task {
@@ -35,6 +41,8 @@ export interface MainFeature {
   name: string
   enabled: boolean
   collapsed: boolean
+  /** Free-text description shown beneath the feature. Absent means blank. */
+  note?: string
   tasks: Task[]
 }
 
