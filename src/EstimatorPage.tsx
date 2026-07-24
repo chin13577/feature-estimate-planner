@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { AppHeader } from './components/AppHeader'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { ImportDialog } from './components/ImportDialog'
 import { PhaseCard } from './components/PhaseCard'
 import { ProjectSummary } from './components/ProjectSummary'
 import { RoleManager } from './components/RoleManager'
@@ -22,12 +23,13 @@ import {
   roleHasEstimates,
 } from './domain/calculations'
 import { exportProjectAsJson } from './domain/exportProject'
-import {
-  IMPORT_ERROR_HEADING,
-  ProjectValidationError,
-  importProjectFromText,
-} from './domain/validateImportedProject'
-import type { MainFeature, Phase, Role, Task } from './domain/types'
+import type {
+  MainFeature,
+  Phase,
+  ProjectData,
+  Role,
+  Task,
+} from './domain/types'
 import { useProject } from './state/ProjectProvider'
 import type { ProjectSummaryEntry } from './state/ProjectProvider'
 
@@ -58,6 +60,7 @@ export function EstimatorPage() {
   } = useProject()
 
   const [pending, setPending] = useState<PendingConfirm | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
 
   const closeConfirm = useCallback(() => setPending(null), [])
 
@@ -92,35 +95,22 @@ export function EstimatorPage() {
     }
   }, [project, notify])
 
-  const handleImportFile = useCallback(
-    (file: File) => {
+  const handleImportConfirmed = useCallback(
+    (imported: ProjectData, warnings: string[]) => {
+      setImportOpen(false)
+
       void (async () => {
-        try {
-          const text = await file.text()
-          const { project: imported, warnings } = importProjectFromText(text)
+        // Imports land as a new saved project rather than overwriting the
+        // open one, so nothing is lost.
+        await adoptProject(imported)
 
-          // Imports land as a new saved project rather than overwriting the
-          // open one, so nothing is lost and no confirmation is needed.
-          await adoptProject(imported)
-
-          notify({
-            tone: 'success',
-            message:
-              warnings.length > 0
-                ? `Imported "${imported.name}". ${warnings.join(' ')}`
-                : `Imported "${imported.name}".`,
-          })
-        } catch (error) {
-          const detail =
-            error instanceof ProjectValidationError
-              ? error.message
-              : 'The file could not be read.'
-          // Nothing is applied — a failed import leaves state untouched.
-          notify({
-            tone: 'error',
-            message: `${IMPORT_ERROR_HEADING}\n${detail}`,
-          })
-        }
+        notify({
+          tone: 'success',
+          message:
+            warnings.length > 0
+              ? `Imported "${imported.name}". ${warnings.join(' ')}`
+              : `Imported "${imported.name}".`,
+        })
       })()
     },
     [adoptProject, notify],
@@ -348,6 +338,17 @@ export function EstimatorPage() {
 
   return (
     <div className="min-h-screen pb-16">
+      {/*
+        Keyboard users would otherwise tab through every header control on
+        each visit; this jumps straight to the estimates.
+      */}
+      <a
+        href="#estimator-main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-sky-600 focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+      >
+        Skip to project content
+      </a>
+
       <AppHeader
         projectName={project.name}
         activeProjectId={project.id}
@@ -359,10 +360,14 @@ export function EstimatorPage() {
         onDuplicateProject={(projectId) => void copyProject(projectId)}
         onDeleteProject={handleDeleteProject}
         onExport={handleExport}
-        onImportFile={handleImportFile}
+        onOpenImport={() => setImportOpen(true)}
       />
 
-      <main className="mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6">
+      <main
+        id="estimator-main"
+        tabIndex={-1}
+        className="mx-auto max-w-7xl space-y-4 px-4 py-6 outline-none sm:px-6"
+      >
         <RoleManager
           roles={project.roles}
           onAdd={(name) => dispatch({ type: 'role/add', name })}
@@ -395,6 +400,12 @@ export function EstimatorPage() {
 
         <ProjectSummary project={project} />
       </main>
+
+      <ImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onConfirm={handleImportConfirmed}
+      />
 
       <ConfirmDialog
         open={pending !== null}

@@ -16,6 +16,36 @@ export interface EstimateInputProps {
   /** Full context for screen readers, e.g. "Developer estimate for Login". */
   label: string
   disabled?: boolean
+  /** Grid coordinates, used for arrow-key navigation between cells. */
+  rowIndex?: number
+  columnIndex?: number
+}
+
+/**
+ * Marks an estimate cell so siblings can be found by coordinate.
+ * Scoped per feature table, since each renders its own grid.
+ */
+export const ESTIMATE_CELL_ATTR = 'data-estimate-cell'
+
+function moveFocus(
+  from: HTMLElement,
+  rowIndex: number,
+  columnIndex: number,
+  rowDelta: number,
+  columnDelta: number,
+): boolean {
+  // The owning table bounds the search, so arrow keys never jump between
+  // features.
+  const table = from.closest('table')
+  if (table === null) return false
+
+  const target = table.querySelector<HTMLInputElement>(
+    `[${ESTIMATE_CELL_ATTR}="${rowIndex + rowDelta}:${columnIndex + columnDelta}"]`,
+  )
+  if (target === null) return false
+
+  target.focus()
+  return true
 }
 
 function toDraft(value: EstimateValue): string {
@@ -35,6 +65,8 @@ export function EstimateInput({
   onCommit,
   label,
   disabled = false,
+  rowIndex,
+  columnIndex,
 }: EstimateInputProps) {
   const [focused, setFocused] = useState(false)
   const [draft, setDraft] = useState(() => toDraft(value))
@@ -88,15 +120,56 @@ export function EstimateInput({
         setFocused(false)
         commit(event.target.value)
       }}
+      {...(rowIndex !== undefined && columnIndex !== undefined
+        ? { [ESTIMATE_CELL_ATTR]: `${rowIndex}:${columnIndex}` }
+        : {})}
       onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault()
-          event.currentTarget.blur()
-        } else if (event.key === 'Escape') {
+        const input = event.currentTarget
+        const navigable = rowIndex !== undefined && columnIndex !== undefined
+
+        if (event.key === 'Escape') {
           event.preventDefault()
           setDraft(toDraft(value))
           setFocused(false)
-          event.currentTarget.blur()
+          input.blur()
+          return
+        }
+
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          // Enter commits and steps down a row, the spreadsheet convention;
+          // on the last row it simply commits.
+          if (!navigable || !moveFocus(input, rowIndex, columnIndex, 1, 0)) {
+            input.blur()
+          }
+          return
+        }
+
+        if (!navigable) return
+
+        // Left/right would otherwise move the caret, so only navigate when
+        // the caret is already at that end of the text.
+        const atStart = input.selectionStart === 0 && input.selectionEnd === 0
+        const atEnd =
+          input.selectionStart === input.value.length &&
+          input.selectionEnd === input.value.length
+
+        const moves: Record<string, [number, number] | undefined> = {
+          ArrowUp: [-1, 0],
+          ArrowDown: [1, 0],
+          ArrowLeft: atStart ? [0, -1] : undefined,
+          ArrowRight: atEnd ? [0, 1] : undefined,
+        }
+
+        const delta = moves[event.key]
+        if (delta === undefined) return
+
+        // Up/down on a number input would step the value; navigating instead.
+        if (moveFocus(input, rowIndex, columnIndex, delta[0], delta[1])) {
+          event.preventDefault()
+        } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+          // No neighbour, but still suppress the spinner's value change.
+          event.preventDefault()
         }
       }}
       className={`${shared} ${

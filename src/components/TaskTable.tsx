@@ -147,11 +147,13 @@ export function TaskTable({
                   </div>
                 </td>
 
-                {roles.map((role) => (
+                {roles.map((role, roleIndex) => (
                   <td key={role.id} className="px-1 py-1">
                     <EstimateInput
                       label={`${role.name} estimate for ${task.name}`}
                       value={task.estimates[role.id] ?? null}
+                      rowIndex={index}
+                      columnIndex={roleIndex}
                       onCommit={(value) =>
                         onSetEstimate(task.id, role.id, value)
                       }

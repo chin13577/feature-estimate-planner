@@ -6,8 +6,6 @@
  * moving their data.
  */
 
-import { useRef } from 'react'
-
 import type { ProjectSummaryEntry } from '../state/ProjectProvider'
 import { EditableText } from './EditableText'
 import { ProjectSwitcher } from './ProjectSwitcher'
@@ -25,7 +23,7 @@ export interface AppHeaderProps {
   onDuplicateProject: (projectId: string) => void
   onDeleteProject: (entry: ProjectSummaryEntry) => void
   onExport: () => void
-  onImportFile: (file: File) => void
+  onOpenImport: () => void
 }
 
 const BUTTON =
@@ -42,9 +40,8 @@ export function AppHeader({
   onDuplicateProject,
   onDeleteProject,
   onExport,
-  onImportFile,
+  onOpenImport,
 }: AppHeaderProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -79,29 +76,10 @@ export function AppHeader({
               <FilePlusIcon className="h-4 w-4" />
               <span className="hidden sm:inline">New Project</span>
             </button>
-
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className={BUTTON}
-            >
+            <button type="button" onClick={onOpenImport} className={BUTTON}>
               <UploadIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Import JSON</span>
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              aria-hidden="true"
-              tabIndex={-1}
-              onChange={(event) => {
-                const file = event.target.files?.[0]
-                if (file !== undefined) onImportFile(file)
-                // Reset so selecting the same file twice still fires a change.
-                event.target.value = ''
-              }}
-            />
 
             <button type="button" onClick={onExport} className={BUTTON}>
               <DownloadIcon className="h-4 w-4" />
