@@ -18,7 +18,7 @@ is for whoever owns and deploys the site.
 - Totals update instantly for each feature, phase, and the whole project
 - Free-text note on every phase
 - Project summary table showing each phase's status and totals
-- Multiple projects saved side by side in your browser
+- Your project saved in this browser, restored when you come back
 - Export and import projects as `.json`
 - Light and dark themes
 - Autosaves to browser storage as you type
@@ -168,13 +168,15 @@ a different project.
 > Project data is stored locally in each user's browser.
 > No cloud database is required.
 
-Projects are saved in the browser that created them. This has consequences
-worth being explicit about:
+The app keeps **one project**, saved in the browser that created it. This has
+consequences worth being explicit about:
 
 - A project created in Chrome on one computer **will not** appear in Firefox,
   on another computer, or on a phone.
 - Clearing browser data, or using "private"/"incognito" mode, **can
-  permanently delete saved projects**.
+  permanently delete the saved project**.
+- **New Project** and **Import JSON** replace what you are working on. Both
+  ask for confirmation first.
 - Nothing is synchronised to the cloud. Nobody else can see your estimates,
   and you cannot recover them if the browser data is lost.
 
@@ -190,8 +192,8 @@ moving to another device.**
 
 **Import** — click **Import JSON**, then choose or drag in a `.json` file. You
 will see a summary of what the file contains before anything is applied.
-Imports are added as a **new** project, so your current work is never
-overwritten.
+Importing **replaces** the project you are working on, so export a backup
+first if you want to keep it.
 
 Use these two together to move a project between browsers or devices, or to
 keep a backup outside the browser.

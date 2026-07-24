@@ -32,7 +32,7 @@ is a decision needed before M0 completes** — see Open Questions.
 | M5 | Core UI | Header, toolbar, role manager, phase cards, feature sections, task table | M4 |
 | M6 | Totals & summary UI | Feature/phase/project total rows, project summary table | M5 |
 | M7 | Dialogs, toasts & a11y | Confirm dialogs, import dialog, toasts, keyboard/ARIA pass | M5 |
-| M8 | Multi-project management | Project list, open/rename/duplicate/delete, active project switching | M3, M5 |
+| M8 | Single local project | One project saved in this browser, behind the repository interface | M3, M5 |
 | M9 | Deployment & docs | `firebase.json`, `.firebaserc.example`, `README.md`, production build gate | M0–M8 |
 
 Milestones are sequential except M6/M7/M8, which can proceed in parallel once M5 lands.
@@ -247,18 +247,26 @@ buttons as the fallback).
 
 ---
 
-## M8 — Multiple Local Projects
+## M8 — Single Local Project
 
-Spec's preferred implementation, built on M3's repository:
+**Scope changed after M8 shipped.** A multi-project switcher was built first,
+then removed at the user's request: the app keeps exactly one project, saved
+in this browser.
 
-- Project switcher listing saved projects with per-project actions: open,
-  rename, duplicate, delete, export.
-- `activeProjectId` persisted in the index.
-- Import lands as a new project rather than overwriting, when the user chooses.
-- Empty state for a first-time visitor.
+The spec permits this — "If multiple-project support significantly delays the
+first version, a single active project is acceptable, but the repository
+interface must still be used." The repository interface is unchanged, so a
+`FirestoreProjectRepository` or a later switcher can be added without touching
+calculations or UI.
 
-Fallback: if this milestone threatens the schedule, ship a single active project
-— the repository interface stays regardless.
+What this means in the app:
+
+- One project, restored on load; `activeProjectId` still tracks it.
+- `New Project` and `Import` replace the current project, and both confirm
+  first — they are destructive again, unlike in the multi-project version.
+- Replacing deletes the outgoing project rather than orphaning it in storage.
+- Re-importing a file exported from this same browser is a no-op on identity:
+  the IDs match, so nothing is deleted.
 
 ---
 
@@ -312,7 +320,7 @@ Component tests are optional; they'd require adding jsdom + Testing Library.
    stay on Vite 5.
 2. **Drag-and-drop.** Ship `dnd-kit` in v1, or move-up/move-down buttons only?
    Default if unanswered: buttons in M5, `dnd-kit` only if M5 finishes early.
-3. **Multi-project.** Full M8, or single active project behind the repository
-   interface? Default if unanswered: build M8 — the spec calls it preferred.
+3. **Multi-project.** ~~Full M8, or single active project?~~ **Resolved:**
+   single project, decided after the switcher was built and removed.
 4. **Icons.** Add `lucide-react`, or inline SVG to keep the bundle minimal?
    Default if unanswered: `lucide-react`, since the spec suggests it.

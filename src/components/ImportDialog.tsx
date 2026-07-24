@@ -99,8 +99,9 @@ export function ImportDialog({ open, onClose, onConfirm }: ImportDialogProps) {
         Import project
       </h2>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-        Choose a <code>.json</code> file exported from this app. It is added as
-        a new project — nothing you have now is replaced.
+        Choose a <code>.json</code> file exported from this app. Importing
+        replaces the project you are working on — export a backup first if you
+        want to keep it.
       </p>
 
       {preview === null ? (

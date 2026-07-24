@@ -6,24 +6,17 @@
  * moving their data.
  */
 
-import type { ProjectSummaryEntry } from '../state/ProjectProvider'
 import { EditableText } from './EditableText'
-import { ProjectSwitcher } from './ProjectSwitcher'
 import { ThemeToggle } from './ThemeToggle'
 import { DownloadIcon, FilePlusIcon, UploadIcon } from './icons'
 
 export interface AppHeaderProps {
   projectName: string
-  activeProjectId: string
-  savedProjects: ProjectSummaryEntry[]
   persistent: boolean
   onRenameProject: (name: string) => void
   onNewProject: () => void
-  onOpenProject: (projectId: string) => void
-  onDuplicateProject: (projectId: string) => void
-  onDeleteProject: (entry: ProjectSummaryEntry) => void
-  onExport: () => void
   onOpenImport: () => void
+  onExport: () => void
 }
 
 const BUTTON =
@@ -31,18 +24,12 @@ const BUTTON =
 
 export function AppHeader({
   projectName,
-  activeProjectId,
-  savedProjects,
   persistent,
   onRenameProject,
   onNewProject,
-  onOpenProject,
-  onDuplicateProject,
-  onDeleteProject,
-  onExport,
   onOpenImport,
+  onExport,
 }: AppHeaderProps) {
-
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
@@ -64,18 +51,11 @@ export function AppHeader({
           </div>
 
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <ProjectSwitcher
-              projects={savedProjects}
-              activeProjectId={activeProjectId}
-              onOpen={onOpenProject}
-              onDuplicate={onDuplicateProject}
-              onDelete={onDeleteProject}
-            />
-
             <button type="button" onClick={onNewProject} className={BUTTON}>
               <FilePlusIcon className="h-4 w-4" />
               <span className="hidden sm:inline">New Project</span>
             </button>
+
             <button type="button" onClick={onOpenImport} className={BUTTON}>
               <UploadIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Import JSON</span>
@@ -92,7 +72,7 @@ export function AppHeader({
 
         <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
           {persistent
-            ? 'Projects are saved in this browser. Export a JSON backup before clearing browser data, changing browsers, or moving to another device.'
+            ? 'This project is saved in this browser only. Export a JSON backup before clearing browser data, changing browsers, or moving to another device.'
             : 'Browser storage is unavailable — nothing will be saved. Export a JSON backup before closing this tab.'}
         </p>
       </div>

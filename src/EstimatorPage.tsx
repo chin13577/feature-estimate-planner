@@ -23,6 +23,7 @@ import {
   roleHasEstimates,
 } from './domain/calculations'
 import { exportProjectAsJson } from './domain/exportProject'
+import { createDefaultProject } from './domain/factories'
 import type {
   MainFeature,
   Phase,
@@ -31,7 +32,6 @@ import type {
   Task,
 } from './domain/types'
 import { useProject } from './state/ProjectProvider'
-import type { ProjectSummaryEntry } from './state/ProjectProvider'
 
 /** A destructive action awaiting confirmation. */
 interface PendingConfirm {
@@ -48,12 +48,7 @@ export function EstimatorPage() {
     dispatch,
     ready,
     persistent,
-    savedProjects,
-    openProject,
-    createProject,
-    copyProject,
-    deleteProject,
-    adoptProject,
+    replaceProject,
     notices,
     notify,
     dismissNotice,
@@ -80,11 +75,21 @@ export function EstimatorPage() {
   /* ---------------- Project-level actions ---------------- */
 
   const handleNewProject = useCallback(() => {
-    // With multiple projects supported, a new project is additive — the
-    // current one stays saved and reachable from the switcher, so no
-    // confirmation is warranted.
-    void createProject()
-  }, [createProject])
+    // Only one project is kept, so starting a new one discards the current
+    // work. That warrants a confirmation.
+    confirmAnd(
+      {
+        title: 'Start a new project?',
+        description:
+          'This replaces the project you are working on. Export a JSON backup first if you want to keep it.',
+        confirmLabel: 'New Project',
+        tone: 'danger',
+      },
+      () => {
+        void replaceProject(createDefaultProject())
+      },
+    )
+  }, [confirmAnd, replaceProject])
 
   const handleExport = useCallback(() => {
     try {
@@ -100,9 +105,9 @@ export function EstimatorPage() {
       setImportOpen(false)
 
       void (async () => {
-        // Imports land as a new saved project rather than overwriting the
-        // open one, so nothing is lost.
-        await adoptProject(imported)
+        // The import dialog already asked the user to confirm this file, and
+        // it warns that importing replaces the current project.
+        await replaceProject(imported)
 
         notify({
           tone: 'success',
@@ -113,28 +118,7 @@ export function EstimatorPage() {
         })
       })()
     },
-    [adoptProject, notify],
-  )
-
-  const handleDeleteProject = useCallback(
-    (entry: ProjectSummaryEntry) => {
-      const isLast = savedProjects.length <= 1
-
-      confirmAnd(
-        {
-          title: `Delete project "${entry.name}"?`,
-          description: isLast
-            ? 'This is your only saved project. Deleting it starts a new empty one, and its estimates cannot be recovered.'
-            : 'This permanently removes the project and all of its estimates from this browser.',
-          confirmLabel: 'Delete Project',
-          tone: 'danger',
-        },
-        () => {
-          void deleteProject(entry.id)
-        },
-      )
-    },
-    [confirmAnd, deleteProject, savedProjects.length],
+    [replaceProject, notify],
   )
 
   /* ---------------- Roles ---------------- */
@@ -351,16 +335,11 @@ export function EstimatorPage() {
 
       <AppHeader
         projectName={project.name}
-        activeProjectId={project.id}
-        savedProjects={savedProjects}
         persistent={persistent}
         onRenameProject={(name) => dispatch({ type: 'project/rename', name })}
         onNewProject={handleNewProject}
-        onOpenProject={(projectId) => void openProject(projectId)}
-        onDuplicateProject={(projectId) => void copyProject(projectId)}
-        onDeleteProject={handleDeleteProject}
-        onExport={handleExport}
         onOpenImport={() => setImportOpen(true)}
+        onExport={handleExport}
       />
 
       <main
