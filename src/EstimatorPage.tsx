@@ -1,5 +1,5 @@
 /**
- * The estimator screen: header, roles, phases, and the dialogs they trigger.
+ * The estimator screen: header, roles, phases, summary, and their dialogs.
  *
  * This owns the confirmation flow — components below it report *intent*
  * ("delete this feature") and this decides whether a confirmation is needed
@@ -11,6 +11,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { AppHeader } from './components/AppHeader'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { PhaseCard } from './components/PhaseCard'
+import { ProjectSummary } from './components/ProjectSummary'
 import { RoleManager } from './components/RoleManager'
 import { Toasts } from './components/Toasts'
 import { pluralize } from './components/formatting'
@@ -21,14 +22,14 @@ import {
   roleHasEstimates,
 } from './domain/calculations'
 import { exportProjectAsJson } from './domain/exportProject'
-import { createDefaultProject } from './domain/factories'
 import {
   IMPORT_ERROR_HEADING,
   ProjectValidationError,
   importProjectFromText,
 } from './domain/validateImportedProject'
-import type { MainFeature, Phase, ProjectData, Role, Task } from './domain/types'
+import type { MainFeature, Phase, Role, Task } from './domain/types'
 import { useProject } from './state/ProjectProvider'
+import type { ProjectSummaryEntry } from './state/ProjectProvider'
 
 /** A destructive action awaiting confirmation. */
 interface PendingConfirm {
@@ -40,8 +41,22 @@ interface PendingConfirm {
 }
 
 export function EstimatorPage() {
-  const { project, dispatch, ready, notices, notify, dismissNotice } =
-    useProject()
+  const {
+    project,
+    dispatch,
+    ready,
+    persistent,
+    savedProjects,
+    openProject,
+    createProject,
+    copyProject,
+    deleteProject,
+    adoptProject,
+    notices,
+    notify,
+    dismissNotice,
+  } = useProject()
+
   const [pending, setPending] = useState<PendingConfirm | null>(null)
 
   const closeConfirm = useCallback(() => setPending(null), [])
@@ -62,20 +77,11 @@ export function EstimatorPage() {
   /* ---------------- Project-level actions ---------------- */
 
   const handleNewProject = useCallback(() => {
-    const replace = () =>
-      dispatch({ type: 'project/replace', project: createDefaultProject() })
-
-    confirmAnd(
-      {
-        title: 'Start a new project?',
-        description:
-          'The current project will be replaced. Export a JSON backup first if you want to keep it.',
-        confirmLabel: 'New Project',
-        tone: 'danger',
-      },
-      replace,
-    )
-  }, [confirmAnd, dispatch])
+    // With multiple projects supported, a new project is additive — the
+    // current one stays saved and reachable from the switcher, so no
+    // confirmation is warranted.
+    void createProject()
+  }, [createProject])
 
   const handleExport = useCallback(() => {
     try {
@@ -89,47 +95,56 @@ export function EstimatorPage() {
   const handleImportFile = useCallback(
     (file: File) => {
       void (async () => {
-        let imported: ProjectData
-        let warnings: string[]
-
         try {
           const text = await file.text()
-          const result = importProjectFromText(text)
-          imported = result.project
-          warnings = result.warnings
+          const { project: imported, warnings } = importProjectFromText(text)
+
+          // Imports land as a new saved project rather than overwriting the
+          // open one, so nothing is lost and no confirmation is needed.
+          await adoptProject(imported)
+
+          notify({
+            tone: 'success',
+            message:
+              warnings.length > 0
+                ? `Imported "${imported.name}". ${warnings.join(' ')}`
+                : `Imported "${imported.name}".`,
+          })
         } catch (error) {
           const detail =
             error instanceof ProjectValidationError
               ? error.message
               : 'The file could not be read.'
-          // Nothing is applied — a failed import must leave state untouched.
+          // Nothing is applied — a failed import leaves state untouched.
           notify({
             tone: 'error',
             message: `${IMPORT_ERROR_HEADING}\n${detail}`,
           })
-          return
         }
-
-        confirmAnd(
-          {
-            title: `Import "${imported.name}"?`,
-            description:
-              'This replaces the current project. Export a JSON backup first if you want to keep it.',
-            confirmLabel: 'Import',
-            tone: 'danger',
-          },
-          () => {
-            dispatch({ type: 'project/replace', project: imported })
-            const summary =
-              warnings.length > 0
-                ? `Project imported. ${warnings.join(' ')}`
-                : 'Project imported.'
-            notify({ tone: 'success', message: summary })
-          },
-        )
       })()
     },
-    [confirmAnd, dispatch, notify],
+    [adoptProject, notify],
+  )
+
+  const handleDeleteProject = useCallback(
+    (entry: ProjectSummaryEntry) => {
+      const isLast = savedProjects.length <= 1
+
+      confirmAnd(
+        {
+          title: `Delete project "${entry.name}"?`,
+          description: isLast
+            ? 'This is your only saved project. Deleting it starts a new empty one, and its estimates cannot be recovered.'
+            : 'This permanently removes the project and all of its estimates from this browser.',
+          confirmLabel: 'Delete Project',
+          tone: 'danger',
+        },
+        () => {
+          void deleteProject(entry.id)
+        },
+      )
+    },
+    [confirmAnd, deleteProject, savedProjects.length],
   )
 
   /* ---------------- Roles ---------------- */
@@ -324,7 +339,9 @@ export function EstimatorPage() {
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-slate-500">Loading your project…</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Loading your project…
+        </p>
       </div>
     )
   }
@@ -333,8 +350,14 @@ export function EstimatorPage() {
     <div className="min-h-screen pb-16">
       <AppHeader
         projectName={project.name}
+        activeProjectId={project.id}
+        savedProjects={savedProjects}
+        persistent={persistent}
         onRenameProject={(name) => dispatch({ type: 'project/rename', name })}
         onNewProject={handleNewProject}
+        onOpenProject={(projectId) => void openProject(projectId)}
+        onDuplicateProject={(projectId) => void copyProject(projectId)}
+        onDeleteProject={handleDeleteProject}
         onExport={handleExport}
         onImportFile={handleImportFile}
       />
@@ -356,7 +379,7 @@ export function EstimatorPage() {
         {phaseCards}
 
         {phaseCount === 0 && (
-          <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
             No phases yet. Add one to start estimating.
           </p>
         )}
@@ -364,11 +387,13 @@ export function EstimatorPage() {
         <button
           type="button"
           onClick={() => dispatch({ type: 'phase/add' })}
-          className="inline-flex items-center gap-1.5 rounded border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+          className="inline-flex items-center gap-1.5 rounded border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <PlusIcon className="h-4 w-4" />
           Add Phase
         </button>
+
+        <ProjectSummary project={project} />
       </main>
 
       <ConfirmDialog

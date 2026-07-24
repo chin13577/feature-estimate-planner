@@ -26,8 +26,8 @@ export function IconButton({
 }: IconButtonProps) {
   const toneClasses =
     tone === 'danger'
-      ? 'text-slate-500 hover:bg-red-50 hover:text-red-600'
-      : 'text-slate-500 hover:bg-slate-200 hover:text-slate-800'
+      ? 'text-slate-500 hover:bg-red-50 hover:text-red-600 dark:text-slate-400'
+      : 'text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
 
   return (
     <button

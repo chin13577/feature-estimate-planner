@@ -62,7 +62,7 @@ export function PhaseCard(props: PhaseCardProps) {
         phase.enabled ? '' : 'opacity-60'
       }`}
     >
-      <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-4 py-3">
+      <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <IconButton
           label={
             phase.collapsed
@@ -90,7 +90,7 @@ export function PhaseCard(props: PhaseCardProps) {
         />
 
         {!phase.enabled && (
-          <span className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600">
+          <span className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600 dark:bg-slate-700 dark:text-slate-400">
             Excluded
           </span>
         )}
@@ -100,7 +100,7 @@ export function PhaseCard(props: PhaseCardProps) {
           </span>
         )}
 
-        <span className="ml-auto whitespace-nowrap text-sm font-medium tabular-nums text-slate-700">
+        <span className="ml-auto whitespace-nowrap text-sm font-medium tabular-nums text-slate-700 dark:text-slate-300">
           {formatTotal(grandTotal)} md
         </span>
 
@@ -138,7 +138,7 @@ export function PhaseCard(props: PhaseCardProps) {
       {!phase.collapsed && (
         <div className="space-y-3 p-4">
           {phase.features.length === 0 && (
-            <p className="rounded border border-dashed border-slate-300 px-3 py-6 text-center text-sm text-slate-400">
+            <p className="rounded border border-dashed border-slate-300 px-3 py-6 text-center text-sm text-slate-400 dark:border-slate-700 dark:text-slate-500">
               No main features yet.
             </p>
           )}
@@ -172,33 +172,33 @@ export function PhaseCard(props: PhaseCardProps) {
           <button
             type="button"
             onClick={props.onAddFeature}
-            className="inline-flex items-center gap-1 rounded border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            className="inline-flex items-center gap-1 rounded border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             Add Main Feature
           </button>
 
-          <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 dark:bg-slate-800/60 dark:border-slate-800">
             <div className="mb-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Phase Total
               </span>
               {roles.map((role) => (
-                <span key={role.id} className="text-sm text-slate-600">
+                <span key={role.id} className="text-sm text-slate-600 dark:text-slate-400">
                   {role.name}:{' '}
-                  <span className="font-medium tabular-nums text-slate-900">
+                  <span className="font-medium tabular-nums text-slate-900 dark:text-slate-100">
                     {formatTotal(calculatePhaseRoleTotal(phase, role.id))}
                   </span>
                 </span>
               ))}
-              <span className="ml-auto text-sm font-semibold tabular-nums text-slate-900">
+              <span className="ml-auto text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">
                 Grand Total: {formatTotal(grandTotal)} man-days
               </span>
             </div>
 
             <label
               htmlFor={`note-${phase.id}`}
-              className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+              className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
             >
               Note
             </label>
@@ -208,7 +208,7 @@ export function PhaseCard(props: PhaseCardProps) {
               value={phase.note}
               placeholder="Assumptions, exclusions, open questions…"
               onChange={(event) => props.onSetNote(event.target.value)}
-              className="w-full resize-y rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              className="w-full resize-y rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500"
             />
           </div>
         </div>

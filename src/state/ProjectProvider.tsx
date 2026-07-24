@@ -17,13 +17,20 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 
-import { createDefaultProject } from '../domain/factories'
+import { createDefaultProject, duplicateProject } from '../domain/factories'
 import type { ProjectData } from '../domain/types'
 import { LocalStorageProjectRepository } from '../storage/LocalStorageProjectRepository'
 import type { ProjectRepository } from '../storage/ProjectRepository'
 import { useAutosave } from '../storage/useAutosave'
 import { projectReducer } from './projectReducer'
 import type { ProjectAction } from './projectReducer'
+
+/** Lightweight row for the project switcher — avoids holding every full tree. */
+export interface ProjectSummaryEntry {
+  id: string
+  name: string
+  updatedAt: string
+}
 
 export interface ProjectContextValue {
   project: ProjectData
@@ -33,7 +40,15 @@ export interface ProjectContextValue {
   ready: boolean
   /** False when localStorage is unavailable and nothing will persist. */
   persistent: boolean
-  /** Transient messages for the toast layer. */
+  /** Every saved project, most recently updated first. */
+  savedProjects: ProjectSummaryEntry[]
+  openProject: (projectId: string) => Promise<void>
+  createProject: () => Promise<void>
+  /** Copy a saved project (defaults to the open one) and switch to it. */
+  copyProject: (projectId?: string) => Promise<void>
+  deleteProject: (projectId: string) => Promise<void>
+  /** Adopt an imported project as a new saved project. */
+  adoptProject: (project: ProjectData) => Promise<void>
   notices: Notice[]
   notify: (notice: Omit<Notice, 'id'>) => void
   dismissNotice: (id: number) => void
@@ -89,6 +104,22 @@ export function ProjectProvider({
   )
   const [ready, setReady] = useState(false)
   const [persistent, setPersistent] = useState(true)
+  const [savedProjects, setSavedProjects] = useState<ProjectSummaryEntry[]>([])
+
+  const refreshSavedProjects = useCallback(async () => {
+    try {
+      const all = await repository.listProjects()
+      setSavedProjects(
+        all.map((entry) => ({
+          id: entry.id,
+          name: entry.name,
+          updatedAt: entry.updatedAt,
+        })),
+      )
+    } catch {
+      // The switcher going stale is not worth interrupting the user over.
+    }
+  }, [repository])
 
   useEffect(() => {
     let cancelled = false
@@ -110,6 +141,8 @@ export function ProjectProvider({
           dispatch({ type: 'project/replace', project: fresh })
           await repository.saveProject(fresh)
         }
+
+        if (!cancelled) await refreshSavedProjects()
       } catch {
         if (!cancelled) {
           setPersistent(false)
@@ -128,7 +161,7 @@ export function ProjectProvider({
     return () => {
       cancelled = true
     }
-  }, [repository, notify])
+  }, [repository, notify, refreshSavedProjects])
 
   useAutosave({
     project,
@@ -143,6 +176,141 @@ export function ProjectProvider({
     },
   })
 
+  // Keep the switcher's names and timestamps current as the open project is
+  // edited, without re-reading storage on every keystroke.
+  useEffect(() => {
+    if (!ready) return
+    setSavedProjects((current) => {
+      const index = current.findIndex((entry) => entry.id === project.id)
+      const next: ProjectSummaryEntry = {
+        id: project.id,
+        name: project.name,
+        updatedAt: project.updatedAt,
+      }
+      if (index === -1) return [next, ...current]
+      if (
+        current[index]!.name === next.name &&
+        current[index]!.updatedAt === next.updatedAt
+      ) {
+        return current
+      }
+      const copy = [...current]
+      copy[index] = next
+      return copy
+    })
+  }, [project.id, project.name, project.updatedAt, ready])
+
+  /**
+   * Persist the open project before switching away from it.
+   * Autosave is debounced, so a fast switch could otherwise drop the last edit.
+   */
+  const flushCurrent = useCallback(async () => {
+    try {
+      await repository.saveProject(project)
+    } catch {
+      notify({
+        tone: 'error',
+        message: 'Could not save the current project before switching.',
+      })
+    }
+  }, [repository, project, notify])
+
+  const switchTo = useCallback(
+    async (next: ProjectData) => {
+      await repository.saveProject(next)
+      await repository.setActiveProjectId(next.id)
+      dispatch({ type: 'project/replace', project: next })
+      await refreshSavedProjects()
+    },
+    [repository, refreshSavedProjects],
+  )
+
+  const openProject = useCallback(
+    async (projectId: string) => {
+      if (projectId === project.id) return
+
+      await flushCurrent()
+      const target = await repository.getProject(projectId)
+
+      if (target === null) {
+        notify({ tone: 'error', message: 'That project could not be found.' })
+        await refreshSavedProjects()
+        return
+      }
+
+      await repository.setActiveProjectId(target.id)
+      dispatch({ type: 'project/replace', project: target })
+    },
+    [project.id, flushCurrent, repository, notify, refreshSavedProjects],
+  )
+
+  const createProject = useCallback(async () => {
+    await flushCurrent()
+    await switchTo(createDefaultProject())
+  }, [flushCurrent, switchTo])
+
+  const copyProject = useCallback(
+    async (projectId?: string) => {
+      await flushCurrent()
+
+      const source =
+        projectId === undefined || projectId === project.id
+          ? project
+          : await repository.getProject(projectId)
+
+      if (source === null) {
+        notify({ tone: 'error', message: 'That project could not be found.' })
+        return
+      }
+
+      await switchTo(duplicateProject(source))
+    },
+    [flushCurrent, project, repository, notify, switchTo],
+  )
+
+  const deleteProject = useCallback(
+    async (projectId: string) => {
+      await repository.deleteProject(projectId)
+
+      if (projectId === project.id) {
+        // The open project is gone — fall back to whatever storage now
+        // considers active, or start fresh if nothing remains.
+        const nextId = await repository.getActiveProjectId()
+        const next = nextId === null ? null : await repository.getProject(nextId)
+
+        if (next !== null) {
+          dispatch({ type: 'project/replace', project: next })
+        } else {
+          const fresh = createDefaultProject()
+          await repository.saveProject(fresh)
+          await repository.setActiveProjectId(fresh.id)
+          dispatch({ type: 'project/replace', project: fresh })
+        }
+      }
+
+      await refreshSavedProjects()
+    },
+    [repository, project.id, refreshSavedProjects],
+  )
+
+  const adoptProject = useCallback(
+    async (incoming: ProjectData) => {
+      await flushCurrent()
+
+      // An imported file may carry the ID of a project already saved here;
+      // re-keying it keeps the import additive rather than silently
+      // overwriting the existing one.
+      const existing = await repository.getProject(incoming.id)
+      const adopted =
+        existing === null || existing.id === project.id
+          ? incoming
+          : { ...incoming, id: crypto.randomUUID() }
+
+      await switchTo(adopted)
+    },
+    [flushCurrent, repository, project.id, switchTo],
+  )
+
   const value = useMemo<ProjectContextValue>(
     () => ({
       project,
@@ -150,11 +318,31 @@ export function ProjectProvider({
       repository,
       ready,
       persistent,
+      savedProjects,
+      openProject,
+      createProject,
+      copyProject,
+      deleteProject,
+      adoptProject,
       notices,
       notify,
       dismissNotice,
     }),
-    [project, repository, ready, persistent, notices, notify, dismissNotice],
+    [
+      project,
+      repository,
+      ready,
+      persistent,
+      savedProjects,
+      openProject,
+      createProject,
+      copyProject,
+      deleteProject,
+      adoptProject,
+      notices,
+      notify,
+      dismissNotice,
+    ],
   )
 
   return (

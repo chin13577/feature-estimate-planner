@@ -46,7 +46,7 @@ function Toast({
   }, [notice.id, notice.tone, onDismiss])
 
   const toneClasses = {
-    info: 'border-slate-300 bg-white text-slate-800',
+    info: 'border-slate-300 bg-white text-slate-800 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200',
     success: 'border-emerald-300 bg-emerald-50 text-emerald-900',
     error: 'border-red-300 bg-red-50 text-red-900',
   }[notice.tone]

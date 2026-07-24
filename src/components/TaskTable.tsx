@@ -63,7 +63,7 @@ export function TaskTable({
         </caption>
 
         <thead>
-          <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
+          <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <th
               scope="col"
               className={`${STICKY_NAME} bg-slate-50 px-3 py-2 text-left font-medium`}
@@ -75,14 +75,14 @@ export function TaskTable({
               <th
                 key={role.id}
                 scope="col"
-                className="min-w-[5.5rem] bg-slate-50 px-3 py-2 text-right font-medium"
+                className="min-w-[5.5rem] bg-slate-50 px-3 py-2 text-right font-medium dark:bg-slate-800/60"
               >
                 {role.name}
               </th>
             ))}
             <th
               scope="col"
-              className="bg-slate-50 px-3 py-2 text-right font-medium"
+              className="bg-slate-50 px-3 py-2 text-right font-medium dark:bg-slate-800/60"
             >
               Actions
             </th>
@@ -94,7 +94,7 @@ export function TaskTable({
             <tr>
               <td
                 colSpan={roles.length + 2}
-                className="px-3 py-4 text-center text-slate-400"
+                className="px-3 py-4 text-center text-slate-400 dark:text-slate-500"
               >
                 No tasks yet.
               </td>
@@ -111,11 +111,11 @@ export function TaskTable({
               <tr
                 key={task.id}
                 className={`border-b border-slate-100 last:border-0 ${
-                  dimmed ? 'bg-slate-50/60 text-slate-400' : 'hover:bg-sky-50/40'
+                  dimmed ? 'bg-slate-50/60 text-slate-400 dark:text-slate-500' : 'hover:bg-sky-50/40'
                 }`}
               >
                 <td
-                  className={`${STICKY_NAME} ${dimmed ? 'bg-slate-50' : 'bg-white'} px-3 py-1.5`}
+                  className={`${STICKY_NAME} ${dimmed ? 'bg-slate-50 dark:bg-slate-800/60' : 'bg-white dark:bg-slate-900'} px-3 py-1.5`}
                 >
                   <div className="flex items-center gap-2">
                     <input
@@ -125,7 +125,7 @@ export function TaskTable({
                       onChange={(event) =>
                         onToggleTask(task.id, event.target.checked)
                       }
-                      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-400 text-sky-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-1"
+                      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-400 text-sky-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 dark:border-slate-500"
                     />
                     <EditableText
                       label="Task name"
@@ -138,7 +138,7 @@ export function TaskTable({
                     {!task.enabled && (
                       // State is conveyed by text as well as opacity, per the
                       // accessibility rules.
-                      <span className="shrink-0 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600">
+                      <span className="shrink-0 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600 dark:bg-slate-700 dark:text-slate-400">
                         Excluded
                       </span>
                     )}
@@ -194,7 +194,7 @@ export function TaskTable({
         </tbody>
 
         <tfoot>
-          <tr className="border-t-2 border-slate-300 bg-slate-50 font-medium">
+          <tr className="border-t-2 border-slate-300 bg-slate-50 font-medium dark:bg-slate-800/60 dark:border-slate-700">
             <th
               scope="row"
               className={`${STICKY_NAME} bg-slate-50 px-3 py-2 text-left`}
@@ -204,12 +204,12 @@ export function TaskTable({
             {roles.map((role) => (
               <td
                 key={role.id}
-                className="px-3 py-2 text-right tabular-nums text-slate-800"
+                className="px-3 py-2 text-right tabular-nums text-slate-800 dark:text-slate-200"
               >
                 {formatTotal(calculateFeatureRoleTotal(phase, feature, role.id))}
               </td>
             ))}
-            <td className="px-3 py-2 text-right tabular-nums text-slate-900">
+            <td className="px-3 py-2 text-right tabular-nums text-slate-900 dark:text-slate-100">
               {hasRoles
                 ? `${formatTotal(calculateFeatureGrandTotal(phase, feature, roles))} md`
                 : '-'}
@@ -222,7 +222,7 @@ export function TaskTable({
         <button
           type="button"
           onClick={onAddTask}
-          className="inline-flex items-center gap-1 rounded px-2 py-1 text-sm font-medium text-sky-700 hover:bg-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-sm font-medium text-sky-700 hover:bg-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:hover:bg-sky-950/40"
         >
           <PlusIcon className="h-3.5 w-3.5" />
           Add Task

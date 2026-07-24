@@ -48,13 +48,13 @@ export function RoleManager({
   return (
     <section
       aria-label="Roles"
-      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:bg-slate-900 dark:border-slate-800"
     >
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Roles
         </h2>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-slate-400 dark:text-slate-500">
           Shown as a column in every task table
         </span>
       </div>
@@ -63,13 +63,13 @@ export function RoleManager({
         {roles.map((role, index) => (
           <li
             key={role.id}
-            className="flex items-center gap-0.5 rounded border border-slate-200 bg-slate-50 py-0.5 pl-1 pr-0.5"
+            className="flex items-center gap-0.5 rounded border border-slate-200 bg-slate-50 py-0.5 pl-1 pr-0.5 dark:bg-slate-800/60 dark:border-slate-800"
           >
             <EditableText
               label="Role name"
               value={role.name}
               onCommit={(name) => onRename(role.id, name)}
-              className="text-sm font-medium text-slate-800"
+              className="text-sm font-medium text-slate-800 dark:text-slate-200"
             />
             <IconButton
               label={`Move role ${role.name} left`}
@@ -99,7 +99,7 @@ export function RoleManager({
         ))}
 
         {roles.length === 0 && (
-          <li className="text-sm text-slate-400">
+          <li className="text-sm text-slate-400 dark:text-slate-500">
             No roles yet — add one to start entering estimates.
           </li>
         )}
@@ -121,12 +121,12 @@ export function RoleManager({
           value={draft}
           placeholder="Add a role, e.g. QA"
           onChange={(event) => setDraft(event.target.value)}
-          className="w-56 rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+          className="w-56 rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:border-slate-700"
         />
         <button
           type="submit"
           disabled={draft.trim().length === 0}
-          className="inline-flex items-center gap-1 rounded border border-slate-300 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex items-center gap-1 rounded border border-slate-300 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <PlusIcon className="h-3.5 w-3.5" />
           Add Role
