@@ -1,9 +1,9 @@
 /**
  * Light/dark theme.
  *
- * Three settings: explicit light, explicit dark, or follow the OS. The
- * resolved theme is applied as a `dark` class on <html>, which is what
- * Tailwind's `darkMode: 'class'` keys off.
+ * Two settings only: light (the default) and dark. The resolved theme is
+ * applied as a `dark` class on <html>, which is what Tailwind's
+ * `darkMode: 'class'` keys off.
  *
  * The choice is stored separately from project data — it is a per-device
  * display preference, not part of an estimate, and must not travel through
@@ -20,67 +20,46 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 
-export type ThemeSetting = 'light' | 'dark' | 'system'
-export type ResolvedTheme = 'light' | 'dark'
+export type Theme = 'light' | 'dark'
 
 export const THEME_STORAGE_KEY = 'manday-estimator-theme-v1'
 
 interface ThemeContextValue {
-  setting: ThemeSetting
-  resolved: ResolvedTheme
-  setSetting: (setting: ThemeSetting) => void
-  /** Cycle light → dark → system, for the toolbar button. */
-  cycle: () => void
+  theme: Theme
+  setTheme: (theme: Theme) => void
+  /** Flip between light and dark, for the toolbar button. */
+  toggle: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function readStoredSetting(): ThemeSetting {
+/**
+ * Read the saved theme, defaulting to light.
+ *
+ * The OS preference is deliberately ignored: light is the default regardless
+ * of system settings, and dark is opt-in.
+ */
+function readStoredTheme(): Theme {
   try {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY)
-    if (stored === 'light' || stored === 'dark' || stored === 'system') {
-      return stored
-    }
+    // 'system' may be present from an earlier version; it resolves to light.
+    return localStorage.getItem(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light'
   } catch {
-    // Storage blocked — fall through to the default.
+    return 'light'
   }
-  return 'system'
-}
-
-function prefersDark(): boolean {
-  return (
-    typeof matchMedia === 'function' &&
-    matchMedia('(prefers-color-scheme: dark)').matches
-  )
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [setting, setSettingState] = useState<ThemeSetting>(readStoredSetting)
-  const [systemDark, setSystemDark] = useState(prefersDark)
-
-  // Track OS changes so 'system' stays live rather than snapshotting at load.
-  useEffect(() => {
-    if (typeof matchMedia !== 'function') return
-
-    const query = matchMedia('(prefers-color-scheme: dark)')
-    const onChange = (event: MediaQueryListEvent) => setSystemDark(event.matches)
-
-    query.addEventListener('change', onChange)
-    return () => query.removeEventListener('change', onChange)
-  }, [])
-
-  const resolved: ResolvedTheme =
-    setting === 'system' ? (systemDark ? 'dark' : 'light') : setting
+  const [theme, setThemeState] = useState<Theme>(readStoredTheme)
 
   useEffect(() => {
     const root = document.documentElement
-    root.classList.toggle('dark', resolved === 'dark')
+    root.classList.toggle('dark', theme === 'dark')
     // Makes native controls (scrollbars, date pickers) match the theme.
-    root.style.colorScheme = resolved
-  }, [resolved])
+    root.style.colorScheme = theme
+  }, [theme])
 
-  const setSetting = useCallback((next: ThemeSetting) => {
-    setSettingState(next)
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next)
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next)
     } catch {
@@ -88,15 +67,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const cycle = useCallback(() => {
-    setSetting(
-      setting === 'light' ? 'dark' : setting === 'dark' ? 'system' : 'light',
-    )
-  }, [setting, setSetting])
+  const toggle = useCallback(() => {
+    setTheme(theme === 'dark' ? 'light' : 'dark')
+  }, [theme, setTheme])
 
   const value = useMemo(
-    () => ({ setting, resolved, setSetting, cycle }),
-    [setting, resolved, setSetting, cycle],
+    () => ({ theme, setTheme, toggle }),
+    [theme, setTheme, toggle],
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

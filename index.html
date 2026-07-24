@@ -13,15 +13,11 @@
   <body>
     <script>
       // Applied before first paint so a dark-theme user never sees a white
-      // flash while the bundle loads.
+      // flash while the bundle loads. Light is the default; the OS preference
+      // is deliberately not consulted.
       (function () {
         try {
-          var stored = localStorage.getItem('manday-estimator-theme-v1')
-          var dark =
-            stored === 'dark' ||
-            ((stored === null || stored === 'system') &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches)
-          if (dark) {
+          if (localStorage.getItem('manday-estimator-theme-v1') === 'dark') {
             document.documentElement.classList.add('dark')
             document.documentElement.style.colorScheme = 'dark'
           }

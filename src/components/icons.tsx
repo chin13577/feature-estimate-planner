@@ -115,15 +115,6 @@ export function MoonIcon(props: IconProps) {
   )
 }
 
-export function MonitorIcon(props: IconProps) {
-  return (
-    <Svg {...props}>
-      <rect x="2" y="3" width="20" height="14" rx="2" />
-      <path d="M8 21h8m-4-4v4" />
-    </Svg>
-  )
-}
-
 export function FolderIcon(props: IconProps) {
   return (
     <Svg {...props}>
