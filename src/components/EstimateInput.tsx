@@ -63,7 +63,7 @@ export function EstimateInput({
   }
 
   const shared =
-    'w-full rounded border border-transparent bg-transparent px-2 py-1 text-right tabular-nums focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200'
+    'w-full rounded border border-transparent bg-transparent px-2 py-1 text-right tabular-nums focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200 dark:text-slate-100 dark:focus:bg-slate-800 dark:focus:ring-sky-900'
 
   return (
     <input
@@ -99,7 +99,11 @@ export function EstimateInput({
           event.currentTarget.blur()
         }
       }}
-      className={`${shared} ${disabled ? 'cursor-not-allowed' : 'hover:border-slate-300'}`}
+      className={`${shared} ${
+        disabled
+          ? 'cursor-not-allowed'
+          : 'hover:border-slate-300 dark:hover:border-slate-600'
+      }`}
     />
   )
 }

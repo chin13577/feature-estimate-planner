@@ -58,7 +58,7 @@ export function PhaseCard(props: PhaseCardProps) {
   return (
     <section
       aria-label={`Phase ${phase.name}`}
-      className={`rounded-lg border border-slate-200 bg-white shadow-sm ${
+      className={`rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 ${
         phase.enabled ? '' : 'opacity-60'
       }`}
     >
@@ -84,7 +84,7 @@ export function PhaseCard(props: PhaseCardProps) {
           label="Phase name"
           value={phase.name}
           onCommit={props.onRename}
-          className={`text-base font-semibold text-slate-900 ${
+          className={`text-base font-semibold text-slate-900 dark:text-slate-100 ${
             phase.enabled ? '' : 'line-through decoration-slate-400'
           }`}
         />
@@ -95,7 +95,7 @@ export function PhaseCard(props: PhaseCardProps) {
           </span>
         )}
         {phase.enabled && state === 'partial' && (
-          <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700">
+          <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
             Partial
           </span>
         )}
@@ -208,7 +208,7 @@ export function PhaseCard(props: PhaseCardProps) {
               value={phase.note}
               placeholder="Assumptions, exclusions, open questions…"
               onChange={(event) => props.onSetNote(event.target.value)}
-              className="w-full resize-y rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500"
+              className="w-full resize-y rounded border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:focus:ring-sky-900 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:placeholder:text-slate-500"
             />
           </div>
         </div>

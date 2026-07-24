@@ -121,7 +121,7 @@ export function RoleManager({
           value={draft}
           placeholder="Add a role, e.g. QA"
           onChange={(event) => setDraft(event.target.value)}
-          className="w-56 rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:border-slate-700"
+          className="w-56 rounded border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:focus:ring-sky-900 dark:border-slate-700"
         />
         <button
           type="submit"

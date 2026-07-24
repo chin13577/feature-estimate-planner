@@ -40,7 +40,7 @@ export function TriStateCheckbox({
       aria-label={label}
       aria-checked={state === 'partial' ? 'mixed' : state === 'enabled'}
       onChange={(event) => onChange(event.target.checked)}
-      className={`h-4 w-4 shrink-0 cursor-pointer rounded border-slate-400 text-sky-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 ${className}`}
+      className={`h-4 w-4 shrink-0 cursor-pointer rounded border-slate-400 text-sky-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 dark:border-slate-500 dark:bg-slate-800 dark:ring-offset-slate-900 ${className}`}
     />
   )
 }

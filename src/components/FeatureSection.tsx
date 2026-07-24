@@ -68,7 +68,7 @@ export function FeatureSection({
   return (
     <section
       aria-label={`Main feature ${feature.name}`}
-      className={`rounded-md border border-slate-200 ${dimmed ? 'opacity-60' : ''}`}
+      className={`rounded-md border border-slate-200 dark:border-slate-800 ${dimmed ? 'opacity-60' : ''}`}
     >
       <header className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 dark:bg-slate-800/60 dark:border-slate-800">
         <IconButton
@@ -92,7 +92,7 @@ export function FeatureSection({
           label="Feature name"
           value={feature.name}
           onCommit={onRename}
-          className={`font-medium text-slate-800 ${
+          className={`font-medium text-slate-800 dark:text-slate-200 ${
             feature.enabled ? '' : 'line-through decoration-slate-400'
           }`}
         />
@@ -103,7 +103,7 @@ export function FeatureSection({
           </span>
         )}
         {feature.enabled && state === 'partial' && (
-          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700">
+          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
             Partial
           </span>
         )}

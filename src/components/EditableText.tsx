@@ -77,7 +77,7 @@ export function EditableText({
             cancel()
           }
         }}
-        className={`min-w-0 rounded border border-sky-500 bg-white px-2 py-1 text-inherit font-inherit outline-none ring-2 ring-sky-200 ${inputClassName}`}
+        className={`min-w-0 rounded border border-sky-500 bg-white px-2 py-1 text-inherit font-inherit outline-none ring-2 ring-sky-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-sky-900 ${inputClassName}`}
       />
     )
   }
@@ -89,7 +89,7 @@ export function EditableText({
       // Enter on a focused button already fires onClick; this makes the
       // affordance explicit for keyboard users arriving by Tab.
       title={`${label}: click to edit`}
-      className={`min-w-0 truncate rounded px-2 py-1 text-left hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${className}`}
+      className={`min-w-0 truncate rounded px-2 py-1 text-left hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:hover:bg-slate-800 ${className}`}
     >
       {value.length > 0 ? value : (placeholder ?? 'Untitled')}
     </button>

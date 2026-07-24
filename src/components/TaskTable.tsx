@@ -66,7 +66,7 @@ export function TaskTable({
           <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <th
               scope="col"
-              className={`${STICKY_NAME} bg-slate-50 px-3 py-2 text-left font-medium`}
+              className={`${STICKY_NAME} bg-slate-50 px-3 py-2 text-left font-medium dark:bg-slate-800/60`}
             >
               <span className="sr-only">Enabled</span>
               Task
@@ -110,8 +110,10 @@ export function TaskTable({
             return (
               <tr
                 key={task.id}
-                className={`border-b border-slate-100 last:border-0 ${
-                  dimmed ? 'bg-slate-50/60 text-slate-400 dark:text-slate-500' : 'hover:bg-sky-50/40'
+                className={`border-b border-slate-100 last:border-0 dark:border-slate-800 ${
+                  dimmed
+                    ? 'bg-slate-50/60 text-slate-400 dark:bg-slate-800/40 dark:text-slate-500'
+                    : 'hover:bg-sky-50/40 dark:hover:bg-sky-950/30'
                 }`}
               >
                 <td
@@ -197,7 +199,7 @@ export function TaskTable({
           <tr className="border-t-2 border-slate-300 bg-slate-50 font-medium dark:bg-slate-800/60 dark:border-slate-700">
             <th
               scope="row"
-              className={`${STICKY_NAME} bg-slate-50 px-3 py-2 text-left`}
+              className={`${STICKY_NAME} bg-slate-50 px-3 py-2 text-left dark:bg-slate-800/60`}
             >
               Feature Total
             </th>
